@@ -1,11 +1,14 @@
-from flask import Flask,request,Response,url_for,redirect
+from flask import Flask,request,Response,url_for,redirect,abort,session,flash,get_flashed_messages
 import json
 import os
-
+import datetime
+import time
 app = Flask("myapp")
 
 app.config['upload_path'] = 'static/upload'
-
+app.secret_key='qweiasa'
+app.permanent_session_lifetime= datetime.timedelta(minutes=5) #过期时间
+#flash存储信息  get_flashed_messages 获取上一次信息，获取完删除
 @app.route('/')
 def hello_world():
     return 'Hello World!'
@@ -95,6 +98,42 @@ def genUrl():
 def genRedict():
     s=url_for('getint2Url',id=55,id2=66)
     return redirect(s)
+
+#异常
+@app.route('/error')
+def getError():
+    abort(406)
+
+@app.errorhandler(406)
+def parseError(error):
+    return ('ubable to get',406)
+
+#session
+@app.route('/login',methods=['post'])
+def login():
+    name=request.form.get('name')
+    session['user'] = name;
+    return 'success'
+
+#session
+@app.route('/logout')
+def logout():
+    s = session.pop('user','null')
+    return s
+
+#cookie
+@app.route('/cookie')
+def addCookie():
+    res = Response("asd")
+    res.set_cookie("name","zss",expires=time.time()+60)
+    return res
+
+#cookie
+@app.route('/delcookie')
+def delCookie():
+    res = Response("asd")
+    res.set_cookie("name","zss",expires=0)
+    return res
 
 
 
